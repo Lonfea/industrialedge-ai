@@ -1,0 +1,63 @@
+services:
+  mqtt:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: industrialedge
+      POSTGRES_USER: edge
+      POSTGRES_PASSWORD: edge
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edge -d industrialedge"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://edge:edge@postgres:5432/industrialedge
+      MQTT_HOST: mqtt
+      MQTT_PORT: 1883
+      MQTT_TOPIC: factory/telemetry/#
+      MQTT_ENABLED: "true"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
+
+  simulator:
+    build: .
+    command: ["python", "-m", "industrialedge_ai.simulator.machine_simulator"]
+    environment:
+      MQTT_HOST: mqtt
+      MQTT_PORT: 1883
+      SIMULATOR_INTERVAL_SECONDS: 1.0
+      FAULT_MACHINE_ID: MACHINE-04
+    depends_on:
+      - mqtt
+
+  dashboard:
+    build: .
+    command: ["streamlit", "run", "dashboard/app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+    environment:
+      API_URL: http://api:8000
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./dashboard:/app/dashboard:ro
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
