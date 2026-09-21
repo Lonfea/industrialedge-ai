@@ -17,6 +17,7 @@ class ExperimentTracker:
 
         import mlflow
         import mlflow.sklearn
+        from mlflow.exceptions import MlflowException
 
         mlflow.set_tracking_uri(self.tracking_uri)
         mlflow.set_experiment("industrialedge-baselines")
@@ -48,7 +49,7 @@ class ExperimentTracker:
                         mlflow.sklearn.log_model(detector.model, artifact_path="model")
                 log.info("Registered %d machine baselines in MLflow", len(detectors))
                 return True
-            except Exception as exc:
+            except (MlflowException, OSError) as exc:
                 if attempt == retries - 1:
                     log.warning("MLflow registration skipped after retries: %s", exc)
                     return False
