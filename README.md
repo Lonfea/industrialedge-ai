@@ -1,17 +1,31 @@
 # IndustrialEdge AI
 
-**Production-style industrial AI platform for real-time machine monitoring, anomaly detection and predictive maintenance.**
+**Production-style industrial AI platform for real-time machine monitoring, anomaly detection, predictive maintenance, MLOps and telemetry-grounded maintenance assistance.**
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/API-FastAPI-009688)](https://fastapi.tiangolo.com/)
 [![MQTT](https://img.shields.io/badge/Streaming-MQTT-purple)](https://mqtt.org/)
 [![Docker](https://img.shields.io/badge/Deploy-Docker-2496ED)](https://www.docker.com/)
 [![ML](https://img.shields.io/badge/ML-Isolation%20Forest-orange)](https://scikit-learn.org/)
-[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-black)](https://github.com/features/actions)
+[![MLflow](https://img.shields.io/badge/MLOps-MLflow-0194E2)](https://mlflow.org/)
+[![CI](https://github.com/Lonfea/industrialedge-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Lonfea/industrialedge-ai/actions/workflows/ci.yml)
 
-IndustrialEdge AI is a self-contained factory intelligence demo built to show how an ML model becomes part of an operational **OT/IT data pipeline**, rather than living in a notebook. Four simulated industrial machines publish telemetry over MQTT. The edge analytics service validates the stream, scores anomalies with machine-specific Isolation Forest models, estimates machine health, stores events, exposes them through FastAPI, and visualizes them in a live dashboard.
+IndustrialEdge AI is a self-contained factory intelligence demo built to show how an ML model becomes part of an operational **OT/IT data pipeline**, rather than living in a notebook. Four simulated industrial machines publish telemetry over MQTT. The edge analytics service validates the stream, scores anomalies with machine-specific Isolation Forest models, estimates machine health, stores events, exposes them through FastAPI, tracks model baselines in MLflow, and provides an operator-facing maintenance copilot.
 
 `MACHINE-04` intentionally develops a progressive bearing-style fault so the full pipeline can be demonstrated in minutes.
+
+## Dashboard preview
+
+![IndustrialEdge AI dashboard preview](docs/dashboard-preview.svg)
+
+*Portfolio preview of the fault state represented by the live Streamlit dashboard. The running system uses simulated telemetry from the MQTT pipeline.*
+
+## v0.2 highlights
+
+- **MLflow tracking:** machine-specific Isolation Forest baselines are registered with parameters, thresholds and model artifacts.
+- **Maintenance Copilot:** questions are answered from current telemetry, anomaly drivers, health score and recent trends.
+- **Provider-ready design:** the copilot works without an external model and can optionally call a compatible chat-completions endpoint.
+- **Grounding first:** the assistant is designed not to invent measurements and makes safety-critical limitations explicit.
 
 ## Why this project
 
@@ -29,6 +43,8 @@ flowchart LR
     DB[(PostgreSQL / SQLite)]
     API[FastAPI]
     UI[Streamlit operations dashboard]
+    CP[Maintenance Copilot]
+    MF[MLflow tracking]
 
     M -->|factory/telemetry/#| MQ
     MQ --> E
@@ -37,6 +53,8 @@ flowchart LR
     H --> DB
     DB --> API
     API --> UI
+    API --> CP
+    ML --> MF
 ```
 
 ## What the demo shows
@@ -49,8 +67,10 @@ flowchart LR
 - **Actionable diagnostics:** bearing-style temperature + vibration patterns generate a maintenance recommendation.
 - **Persistence:** PostgreSQL in Docker, SQLite for lightweight local development.
 - **API-first design:** telemetry can also be POSTed directly to FastAPI for integration testing.
-- **Containerized deployment:** broker, database, API, simulator and dashboard start together.
-- **CI:** linting and unit tests run on every push and pull request.
+- **MLOps:** MLflow records baseline model parameters, thresholds and model artifacts.
+- **Maintenance Copilot:** machine questions are answered from telemetry and model outputs with a deterministic grounded fallback.
+- **Containerized deployment:** broker, database, MLflow, API, simulator and dashboard start together.
+- **CI:** linting and unit tests run on code changes.
 
 ## Run the complete system
 
@@ -66,9 +86,22 @@ Then open:
 
 - Dashboard: `http://localhost:8501`
 - API docs: `http://localhost:8000/docs`
+- MLflow: `http://localhost:5000`
 - API health: `http://localhost:8000/health`
 
 The simulator starts with normal data. After roughly 45 telemetry cycles, Machine 04 progressively develops the injected fault. The dashboard should move from green to warning/critical as the anomaly becomes stronger.
+
+## Maintenance Copilot
+
+The default copilot requires no API key. It generates a grounded explanation from machine telemetry and model outputs. An optional compatible external chat model can be configured with `COPILOT_API_URL`, `COPILOT_API_KEY`, and `COPILOT_MODEL`; otherwise the deterministic grounded provider is used automatically.
+
+Example:
+
+```bash
+curl -X POST http://localhost:8000/copilot \\
+  -H "Content-Type: application/json" \\
+  -d '{"machine_id":"MACHINE-04","question":"Why is this machine abnormal and what should maintenance inspect?"}'
+```
 
 ## Run the analytics tests without Docker
 
@@ -113,12 +146,15 @@ curl -X POST http://localhost:8000/telemetry \\
 ```text
 industrialedge-ai/
 ├── config/                 machine engineering baselines
-├── dashboard/              live Streamlit operations UI
+├── dashboard/              live Streamlit operations UI + copilot
+├── docs/                   portfolio visual assets
 ├── mosquitto/              local MQTT broker config
 ├── src/industrialedge_ai/
 │   ├── analytics/          anomaly model + health/diagnostics
 │   ├── api/                FastAPI service
+│   ├── copilot/            grounded maintenance assistant
 │   ├── ingestion/          MQTT consumer
+│   ├── mlops/              MLflow experiment tracking
 │   ├── simulator/          industrial telemetry + fault injection
 │   └── storage/            SQL persistence
 ├── tests/                  analytics tests
@@ -142,6 +178,12 @@ The project is intentionally reproducible and does not pretend that generated te
 ### Why edge-first?
 Anomaly inference is close to the telemetry source, while persistence and the dashboard remain independently replaceable. That maps naturally to industrial environments where latency, resilience and data-governance constraints can make local processing valuable.
 
+### Why MLflow?
+Tracking detector configuration, thresholds and model artifacts creates a foundation for model comparison, validation, promotion and later drift monitoring.
+
+### Why a grounded copilot?
+A maintenance assistant should not guess sensor values. The copilot receives machine state from the system itself and is designed to stay within that context. Its recommendations are decision support, not safety-critical maintenance authorization.
+
 ## Roadmap
 
 - [x] MQTT streaming pipeline
@@ -155,9 +197,9 @@ Anomaly inference is close to the telemetry source, while persistence and the da
 - [x] Live dashboard
 - [x] Docker Compose deployment
 - [x] GitHub Actions CI
-- [ ] MLflow experiment/model tracking
+- [x] MLflow experiment/model tracking
 - [ ] OPC UA gateway adapter
-- [ ] LLM maintenance copilot with telemetry-grounded tool calls
+- [x] Telemetry-grounded maintenance copilot
 - [ ] Alert routing and incident workflow
 - [ ] Model drift monitoring
 - [ ] Role-based access and audit logging
@@ -170,9 +212,9 @@ This project is designed around questions that commonly matter in industrial AI 
 1. How do you move data from OT equipment into an IT/AI system?
 2. How do you distinguish machine-specific normal behavior from anomalies?
 3. How do you turn an anomaly score into something useful to an operator?
-4. How do you deploy and test the entire pipeline reproducibly?
-5. How would you replace the simulator with a PLC, OPC UA server or production historian?
-6. How would you monitor model drift and false positives after deployment?
+4. How are model configurations and artifacts tracked with MLflow?
+5. How is the maintenance copilot grounded so it does not invent telemetry?
+6. How would you replace the simulator with a PLC, OPC UA server or production historian?
 
 ## Disclaimer
 
