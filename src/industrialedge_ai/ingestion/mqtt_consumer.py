@@ -4,6 +4,7 @@ import json
 import logging
 import time
 from threading import Thread
+
 import paho.mqtt.client as mqtt
 
 from industrialedge_ai.models import Telemetry

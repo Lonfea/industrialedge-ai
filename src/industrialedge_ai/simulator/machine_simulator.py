@@ -4,6 +4,7 @@ import json
 import logging
 import time
 from datetime import datetime, timezone
+
 import numpy as np
 import paho.mqtt.client as mqtt
 

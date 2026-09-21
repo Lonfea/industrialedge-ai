@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+
 from sqlalchemy import Boolean, DateTime, Float, String, Text, create_engine, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
