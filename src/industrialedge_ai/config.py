@@ -15,6 +15,11 @@ class Settings:
     mqtt_enabled: bool = os.getenv("MQTT_ENABLED", "true").lower() in {"1", "true", "yes"}
     simulator_interval_seconds: float = float(os.getenv("SIMULATOR_INTERVAL_SECONDS", "1.0"))
     fault_machine_id: str = os.getenv("FAULT_MACHINE_ID", "MACHINE-04")
+    mlflow_enabled: bool = os.getenv("MLFLOW_ENABLED", "false").lower() in {"1", "true", "yes"}
+    mlflow_tracking_uri: str = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+    copilot_api_url: str | None = os.getenv("COPILOT_API_URL")
+    copilot_api_key: str | None = os.getenv("COPILOT_API_KEY")
+    copilot_model: str | None = os.getenv("COPILOT_MODEL")
 
 
 def machine_config_path() -> Path:

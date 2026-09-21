@@ -30,3 +30,15 @@ class AnalysisResult(BaseModel):
 class MachineSnapshot(BaseModel):
     telemetry: Telemetry
     analysis: AnalysisResult
+
+
+class CopilotQuestion(BaseModel):
+    machine_id: str
+    question: str = Field(min_length=2, max_length=500)
+
+
+class CopilotResponse(BaseModel):
+    machine_id: str
+    answer: str
+    grounded_in_points: int
+    provider: str

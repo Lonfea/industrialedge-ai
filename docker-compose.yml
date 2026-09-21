@@ -20,6 +20,26 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  mlflow:
+    build: .
+    command:
+      [
+        "mlflow",
+        "server",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "5000",
+        "--backend-store-uri",
+        "sqlite:////mlflow/mlflow.db",
+        "--default-artifact-root",
+        "/mlflow/artifacts",
+      ]
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+
   api:
     build: .
     environment:
@@ -28,12 +48,19 @@ services:
       MQTT_PORT: 1883
       MQTT_TOPIC: factory/telemetry/#
       MQTT_ENABLED: "true"
+      MLFLOW_ENABLED: "true"
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      COPILOT_API_URL: \${COPILOT_API_URL:-}
+      COPILOT_API_KEY: \${COPILOT_API_KEY:-}
+      COPILOT_MODEL: \${COPILOT_MODEL:-}
     ports:
       - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
       mqtt:
+        condition: service_started
+      mlflow:
         condition: service_started
 
   simulator:
@@ -61,3 +88,4 @@ services:
 
 volumes:
   postgres_data:
+  mlflow_data:
