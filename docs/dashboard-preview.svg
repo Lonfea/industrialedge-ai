@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820">
+<rect width="1400" height="820" fill="#0e1117"/>
+<style>
+.t{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;fill:#fafafa}.m{fill:#a5b0be}.card{fill:#171b22;stroke:#2b313c;stroke-width:2}.ok{fill:#43d17a}.warn{fill:#ffb44a}.crit{fill:#ff5d68}.axis{stroke:#3a4350}.b{fill:none;stroke:#4da3ff;stroke-width:4}.o{fill:none;stroke:#ff9f43;stroke-width:4}
+</style>
+<text x="44" y="58" class="t" font-size="36" font-weight="700">IndustrialEdge AI</text>
+<text x="44" y="90" class="t m" font-size="16">Real-time machine health · anomaly detection · predictive maintenance · maintenance copilot</text>
+<g>
+<rect x="44" y="120" rx="14" width="310" height="120" class="card"/><text x="62" y="153" class="t ok" font-size="18" font-weight="700">● MACHINE-01</text><text x="62" y="195" class="t m" font-size="15">Health</text><text x="225" y="195" class="t" font-size="26" font-weight="700">97%</text><text x="62" y="224" class="t m" font-size="15">Anomaly</text><text x="225" y="224" class="t" font-size="18" font-weight="700">0.08</text>
+<rect x="380" y="120" rx="14" width="310" height="120" class="card"/><text x="398" y="153" class="t ok" font-size="18" font-weight="700">● MACHINE-02</text><text x="398" y="195" class="t m" font-size="15">Health</text><text x="561" y="195" class="t" font-size="26" font-weight="700">94%</text><text x="398" y="224" class="t m" font-size="15">Anomaly</text><text x="561" y="224" class="t" font-size="18" font-weight="700">0.12</text>
+<rect x="716" y="120" rx="14" width="310" height="120" class="card"/><text x="734" y="153" class="t warn" font-size="18" font-weight="700">● MACHINE-03</text><text x="734" y="195" class="t m" font-size="15">Health</text><text x="897" y="195" class="t" font-size="26" font-weight="700">78%</text><text x="734" y="224" class="t m" font-size="15">Anomaly</text><text x="897" y="224" class="t" font-size="18" font-weight="700">0.47</text>
+<rect x="1052" y="120" rx="14" width="304" height="120" class="card"/><text x="1070" y="153" class="t crit" font-size="18" font-weight="700">● MACHINE-04</text><text x="1070" y="195" class="t m" font-size="15">Health</text><text x="1233" y="195" class="t" font-size="26" font-weight="700">38%</text><text x="1070" y="224" class="t m" font-size="15">Anomaly</text><text x="1233" y="224" class="t" font-size="18" font-weight="700">0.91</text>
+</g>
+<rect x="44" y="265" rx="14" width="1312" height="190" class="card"/>
+<text x="64" y="300" class="t" font-size="21" font-weight="700">MACHINE-04 · Drive Motor</text>
+<text x="64" y="345" class="t m" font-size="13">Temperature</text><text x="64" y="373" class="t" font-size="21" font-weight="700">91.4 °C</text>
+<text x="310" y="345" class="t m" font-size="13">Vibration</text><text x="310" y="373" class="t" font-size="21" font-weight="700">7.80 mm/s</text>
+<text x="556" y="345" class="t m" font-size="13">Pressure</text><text x="556" y="373" class="t" font-size="21" font-weight="700">5.82 bar</text>
+<text x="802" y="345" class="t m" font-size="13">RPM</text><text x="802" y="373" class="t" font-size="21" font-weight="700">3,420</text>
+<text x="1048" y="345" class="t m" font-size="13">Power</text><text x="1048" y="373" class="t" font-size="21" font-weight="700">4.90 kW</text>
+<rect x="64" y="397" rx="9" width="1272" height="40" fill="#3a171b" stroke="#8a343c"/><text x="80" y="422" class="t" fill="#ffccd0" font-size="15"><tspan font-weight="700">Possible bearing degradation</tspan> — Inspect bearing assembly and lubrication as soon as operationally safe.</text>
+<rect x="44" y="480" rx="14" width="760" height="300" class="card"/><text x="64" y="515" class="t" font-size="19" font-weight="700">Telemetry trend</text>
+<line x1="82" y1="725" x2="770" y2="725" class="axis"/><line x1="82" y1="555" x2="82" y2="725" class="axis"/>
+<polyline points="82,704 145,695 210,686 275,670 340,651 405,627 470,604 535,582 600,560 665,545 730,530 770,518" class="b"/>
+<polyline points="82,716 145,710 210,703 275,692 340,678 405,660 470,639 535,617 600,592 665,565 730,542 770,525" class="o"/>
+<text x="82" y="754" class="t m" font-size="12">Temperature · Vibration · Power</text>
+<rect x="830" y="480" rx="14" width="526" height="300" class="card"/><text x="850" y="515" class="t" font-size="19" font-weight="700">Maintenance Copilot</text>
+<text x="850" y="552" class="t" fill="#9fb4cc" font-size="15">Why is MACHINE-04 abnormal and what should maintenance inspect?</text>
+<rect x="850" y="575" rx="10" width="486" height="150" fill="#0f1824" stroke="#2c5f93"/>
+<text x="868" y="603" class="t" fill="#d9e8fb" font-size="14"><tspan x="868" dy="0">MACHINE-04 is critical with health 38% and anomaly score 0.91.</tspan><tspan x="868" dy="23">The strongest drivers are vibration, temperature and power.</tspan><tspan x="868" dy="23">The current pattern is consistent with possible bearing degradation.</tspan><tspan x="868" dy="23">Inspect the bearing assembly and lubrication as soon as operationally safe.</tspan></text>
+<text x="850" y="753" class="t m" font-size="12">Grounded in recent telemetry · deterministic-grounded provider</text>
+</svg>
