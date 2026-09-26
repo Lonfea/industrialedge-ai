@@ -38,9 +38,9 @@ def process(telemetry: Telemetry) -> AnalysisResult:
         raise ValueError(f"Unknown machine_id: {telemetry.machine_id}")
     result = analytics.analyze(telemetry)
     repository.save(telemetry, result)
-    if result.is_anomaly:
+    if result.alarm:
         log.warning(
-            "Anomaly %s score=%s health=%s",
+            "Alarm %s score=%s health=%s",
             telemetry.machine_id,
             result.anomaly_score,
             result.health_score,

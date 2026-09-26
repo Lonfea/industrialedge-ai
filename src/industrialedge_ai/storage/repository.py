@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Float, String, Text, create_engine, select
+from sqlalchemy import Boolean, DateTime, Float, String, Text, create_engine, inspect, select, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 from industrialedge_ai.models import AnalysisResult, MachineSnapshot, Telemetry
@@ -25,6 +25,7 @@ class TelemetryRow(Base):
     power: Mapped[float] = mapped_column(Float)
     anomaly_score: Mapped[float] = mapped_column(Float)
     is_anomaly: Mapped[bool] = mapped_column(Boolean)
+    alarm: Mapped[bool] = mapped_column(Boolean, default=False)
     health_score: Mapped[float] = mapped_column(Float)
     severity: Mapped[str] = mapped_column(String(24))
     likely_cause: Mapped[str] = mapped_column(Text)
@@ -37,12 +38,23 @@ class TelemetryRepository:
         connect_args = {"check_same_thread": False} if database_url.startswith("sqlite") else {}
         self.engine = create_engine(database_url, pool_pre_ping=True, connect_args=connect_args)
         Base.metadata.create_all(self.engine)
+        self._add_missing_columns()
+
+    def _add_missing_columns(self) -> None:
+        """Upgrade databases created before the ``alarm`` column existed."""
+        columns = {column["name"] for column in inspect(self.engine).get_columns("telemetry")}
+        if "alarm" not in columns:
+            with self.engine.begin() as connection:
+                connection.execute(
+                    text("ALTER TABLE telemetry ADD COLUMN alarm BOOLEAN NOT NULL DEFAULT FALSE")
+                )
 
     def save(self, telemetry: Telemetry, analysis: AnalysisResult) -> None:
         row = TelemetryRow(
             **telemetry.model_dump(),
             anomaly_score=analysis.anomaly_score,
             is_anomaly=analysis.is_anomaly,
+            alarm=analysis.alarm,
             health_score=analysis.health_score,
             severity=analysis.severity,
             likely_cause=analysis.likely_cause,
@@ -94,6 +106,7 @@ class TelemetryRepository:
             timestamp=row.timestamp,
             anomaly_score=row.anomaly_score,
             is_anomaly=row.is_anomaly,
+            alarm=bool(row.alarm),
             health_score=row.health_score,
             severity=row.severity,
             likely_cause=row.likely_cause,

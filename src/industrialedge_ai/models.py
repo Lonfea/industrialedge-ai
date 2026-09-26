@@ -19,7 +19,8 @@ class AnalysisResult(BaseModel):
     machine_id: str
     timestamp: datetime
     anomaly_score: float
-    is_anomaly: bool
+    is_anomaly: bool  # this reading alone crossed the threshold
+    alarm: bool = False  # confirmed: enough recent readings crossed it
     health_score: float
     severity: str
     likely_cause: str
