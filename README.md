@@ -61,7 +61,8 @@ flowchart LR
 
 - **Real-time telemetry:** five operational signals from four machines over MQTT.
 - **Fault simulation:** progressive vibration, temperature, power and RPM drift on Machine 04.
-- **ML anomaly detection:** independent Isolation Forest baseline per machine.
+- **ML anomaly detection:** independent Isolation Forest baseline per machine, benchmarked on real pump data (SKAB).
+- **Alarm confirmation:** alarms need 3 anomalous readings out of 5, so single spikes do not page anyone.
 - **Explainability:** the largest standardized sensor deviations are surfaced as anomaly drivers.
 - **Machine health:** converts model output and engineering stress into a 0–100 health score.
 - **Actionable diagnostics:** bearing-style temperature + vibration patterns generate a maintenance recommendation.
@@ -164,6 +165,33 @@ industrialedge-ai/
 └── pyproject.toml
 ```
 
+## Measured on real pump data
+
+The detector trains on synthetic data in the demo. To check how it behaves on real sensors, `scripts/benchmark_skab.py` runs it on [SKAB](https://github.com/waico/SKAB), the Skoltech Anomaly Benchmark: a water-pump testbed with vibration, motor current, pressure, temperature and flow sensors, and 34 labelled experiments (valve closures, leaks, rotor imbalance).
+
+The script follows SKAB's published outlier-detection protocol (fit on the first 400 rows of each experiment, score the rest, pool the counts). It first reproduces the leaderboard's own Isolation Forest entry exactly (F1 0.29, FAR 2.56%, MAR 82.89%), which confirms the protocol matches before anything is compared.
+
+| Detector | F1 | False-alarm rate | Missed-alarm rate |
+|---|---:|---:|---:|
+| SKAB leaderboard Isolation Forest (reproduction) | 0.29 | 2.6% | 82.9% |
+| IndustrialEdge detector | 0.67 | 27.7% | 38.2% |
+| IndustrialEdge detector + 3-of-5 alarm confirmation | 0.69 | 21.3% | 38.0% |
+| 3-sigma on any signal | 0.76 | 44.1% | 15.4% |
+| Hotelling T-squared (99th percentile limit) | 0.76 | 50.2% | 12.4% |
+
+What the numbers show:
+
+- **Calibration matters more than the model.** The leaderboard entry and this project both use Isolation Forest. The leaderboard version flags a fixed 0.05% of points and misses 83% of anomalies. This project calibrates the alarm threshold on the healthy data's own score distribution, which raises F1 from 0.29 to 0.67.
+- **Alarm confirmation cuts false alarms.** Requiring 3 of the last 5 readings to be anomalous lowers the false-alarm rate from 27.7% to 21.3% without missing more anomalies. The service now uses this for its `alarm` field and warning log. The 3-of-5 setting was evaluated on this same benchmark, so the improvement is indicative.
+- **Simple statistics score a higher F1, at a cost.** 3-sigma limits and Hotelling T² reach F1 0.76 but raise a false alarm on 44–50% of normal readings. In a plant, that alarm load would train operators to ignore the system. Choosing between them is a precision/recall trade-off per site, not a clear win either way.
+- **The best published methods reach F1 0.78** (Conv-AE, MSET on the SKAB leaderboard). They model time windows, where this detector scores each reading independently.
+
+```bash
+python scripts/benchmark_skab.py --output evaluation/skab_benchmark.json
+```
+
+The SKAB data is GPL-3.0 licensed, so it is downloaded at run time and not committed.
+
 ## Engineering decisions
 
 ### Why MQTT?
@@ -173,7 +201,10 @@ MQTT is lightweight and common in IoT/edge architectures. It keeps the simulator
 A compressor and a motor do not share the same normal temperature, vibration or operating speed. Each detector therefore learns from the nominal engineering envelope of its own machine.
 
 ### Why synthetic healthy data?
-The project is intentionally reproducible and does not pretend that generated telemetry is a real predictive-maintenance dataset. Synthetic baselines make the software architecture testable without proprietary factory data. In a production deployment, this boundary would be replaced with historian/SCADA/PLC telemetry and a validated training dataset.
+The project is intentionally reproducible and does not pretend that generated telemetry is a real predictive-maintenance dataset. Synthetic baselines make the software architecture testable without proprietary factory data. `MachineAnomalyDetector` also accepts a `baseline` array of real healthy history, which is how the SKAB benchmark runs it; in a plant, that would come from the historian.
+
+### Why confirm alarms over several readings?
+A single anomalous reading is often noise. `AlarmDebouncer` raises `alarm` only when 3 of the last 5 readings per machine cross the threshold, while `is_anomaly` still reports each reading on its own. Existing databases gain the new `alarm` column automatically on startup.
 
 ### Why edge-first?
 Anomaly inference is close to the telemetry source, while persistence and the dashboard remain independently replaceable. That maps naturally to industrial environments where latency, resilience and data-governance constraints can make local processing valuable.
@@ -200,6 +231,9 @@ A maintenance assistant should not guess sensor values. The copilot receives mac
 - [x] MLflow experiment/model tracking
 - [ ] OPC UA gateway adapter
 - [x] Telemetry-grounded maintenance copilot
+- [x] Benchmark on real sensor data (SKAB)
+- [x] Alarm confirmation (3-of-5 debounce)
+- [ ] Window-based detection (the SKAB leaders model time windows)
 - [ ] Alert routing and incident workflow
 - [ ] Model drift monitoring
 - [ ] Role-based access and audit logging
@@ -210,7 +244,7 @@ A maintenance assistant should not guess sensor values. The copilot receives mac
 This project is designed around questions that commonly matter in industrial AI interviews:
 
 1. How do you move data from OT equipment into an IT/AI system?
-2. How do you distinguish machine-specific normal behavior from anomalies?
+2. How do you distinguish machine-specific normal behavior from anomalies, and how well does it work on real sensor data?
 3. How do you turn an anomaly score into something useful to an operator?
 4. How are model configurations and artifacts tracked with MLflow?
 5. How is the maintenance copilot grounded so it does not invent telemetry?
