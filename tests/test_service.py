@@ -17,3 +17,11 @@ def test_end_to_end_analysis_returns_explanation():
     assert result.health_score < 60
     assert result.likely_cause
     assert result.recommendation
+
+
+def test_alarm_needs_sustained_fault_readings():
+    service = AnalyticsService()
+    fault = Telemetry(machine_id="MACHINE-04", temperature=93.0, vibration=7.9, pressure=5.8, rpm=3200, power=5.1)
+    results = [service.analyze(fault) for _ in range(3)]
+    assert all(result.is_anomaly for result in results)
+    assert [result.alarm for result in results] == [False, False, True]
