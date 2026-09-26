@@ -1,0 +1,124 @@
+{
+  "dataset": "SKAB v0.9 (waico/SKAB), 34 labelled experiments",
+  "protocol": "per experiment: fit on first 400 rows, score the rest; pooled counts",
+  "test_rows": 23801,
+  "anomalous_test_rows": 12771,
+  "leaderboard_reference": {
+    "f1": 0.29,
+    "far_percent": 2.56,
+    "mar_percent": 82.89
+  },
+  "protocol_reproduced": true,
+  "results": {
+    "SKAB leaderboard Isolation Forest (reproduction)": {
+      "f1": 0.29,
+      "far_percent": 2.56,
+      "mar_percent": 82.89,
+      "by_experiment_group": {
+        "valve1": {
+          "f1": 0.21,
+          "far_percent": 1.14,
+          "mar_percent": 88.38
+        },
+        "valve2": {
+          "f1": 0.19,
+          "far_percent": 1.34,
+          "mar_percent": 89.58
+        },
+        "other": {
+          "f1": 0.4,
+          "far_percent": 4.65,
+          "mar_percent": 73.83
+        }
+      }
+    },
+    "IndustrialEdge detector": {
+      "f1": 0.67,
+      "far_percent": 27.68,
+      "mar_percent": 38.19,
+      "by_experiment_group": {
+        "valve1": {
+          "f1": 0.61,
+          "far_percent": 23.68,
+          "mar_percent": 47.38
+        },
+        "valve2": {
+          "f1": 0.69,
+          "far_percent": 33.47,
+          "mar_percent": 32.76
+        },
+        "other": {
+          "f1": 0.72,
+          "far_percent": 31.07,
+          "mar_percent": 28.13
+        }
+      }
+    },
+    "IndustrialEdge detector + 3-of-5 alarm confirmation": {
+      "f1": 0.69,
+      "far_percent": 21.34,
+      "mar_percent": 38.05,
+      "by_experiment_group": {
+        "valve1": {
+          "f1": 0.63,
+          "far_percent": 15.04,
+          "mar_percent": 48.17
+        },
+        "valve2": {
+          "f1": 0.71,
+          "far_percent": 30.13,
+          "mar_percent": 31.51
+        },
+        "other": {
+          "f1": 0.74,
+          "far_percent": 26.78,
+          "mar_percent": 27.16
+        }
+      }
+    },
+    "3-sigma on any signal": {
+      "f1": 0.76,
+      "far_percent": 44.1,
+      "mar_percent": 15.42,
+      "by_experiment_group": {
+        "valve1": {
+          "f1": 0.74,
+          "far_percent": 45.95,
+          "mar_percent": 17.42
+        },
+        "valve2": {
+          "f1": 0.72,
+          "far_percent": 54.73,
+          "mar_percent": 19.45
+        },
+        "other": {
+          "f1": 0.79,
+          "far_percent": 38.89,
+          "mar_percent": 11.63
+        }
+      }
+    },
+    "Hotelling T-squared (99th percentile limit)": {
+      "f1": 0.76,
+      "far_percent": 50.17,
+      "mar_percent": 12.44,
+      "by_experiment_group": {
+        "valve1": {
+          "f1": 0.75,
+          "far_percent": 53.11,
+          "mar_percent": 13.24
+        },
+        "valve2": {
+          "f1": 0.72,
+          "far_percent": 61.67,
+          "mar_percent": 15.56
+        },
+        "other": {
+          "f1": 0.79,
+          "far_percent": 43.39,
+          "mar_percent": 10.48
+        }
+      }
+    }
+  }
+}
